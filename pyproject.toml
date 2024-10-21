@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "gptspeak"
+version = "0.1.0"
+description = ""
+authors = ["Sanjay Nadhavajhala <sanjay.nadhavajhala@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+click = "^8.1.7"
+openai = "^1.52.0"
+python-dotenv = "^1.0.1"
+pydub = "^0.25.1"
+simpleaudio = "^1.0.4"
+tqdm = "^4.66.5"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+gptspeak = "gptspeak.cli:cli"
