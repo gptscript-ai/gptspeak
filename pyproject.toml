@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "gptspeak"
-version = "0.1.0"
-description = ""
+version = "0.1.2"
+description = "Text-to-speech CLI tool and Python library using OpenAI's TTS API"
 authors = ["Sanjay Nadhavajhala <sanjay.nadhavajhala@gmail.com>"]
 readme = "README.md"
 
@@ -24,3 +24,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 gptspeak = "gptspeak.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/gptscript-ai/gptspeak"
+Issues = "https://github.com/gptscript-ai/gptspeak/issues"
