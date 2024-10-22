@@ -44,67 +44,110 @@ def cli(ctx, args):
         # If no arguments or a subcommand is provided, invoke the group command
         cli_group.main(args=args)
     else:
-        # Otherwise, treat it as a direct text-to-speech conversion
-        output = None
-        default_model, default_voice = get_config()
-        model = default_model
-        voice = default_voice
-        text = []
+        # Check if the first argument is a file
+        if Path(args[0]).is_file():
+            # Treat it as a file conversion
+            input_file = args[0]
+            output = None
+            default_model, default_voice = get_config()
+            model = default_model
+            voice = default_voice
 
-        i = 0
-        while i < len(args):
-            if args[i] in ["-o", "--output"] and i + 1 < len(args):
-                output = args[i + 1]
-                i += 2
-            elif args[i] in ["-m", "--model"] and i + 1 < len(args):
-                try:
-                    model = validate_model(None, None, args[i + 1])
-                except click.BadParameter as e:
-                    click.echo(f"Error: {str(e)}", err=True)
+            i = 1
+            while i < len(args):
+                if args[i] in ["-o", "--output"] and i + 1 < len(args):
+                    output = args[i + 1]
+                    i += 2
+                elif args[i] in ["-m", "--model"] and i + 1 < len(args):
+                    try:
+                        model = validate_model(None, None, args[i + 1])
+                    except click.BadParameter as e:
+                        click.echo(f"Error: {str(e)}", err=True)
+                        ctx.exit(1)
+                    i += 2
+                elif args[i] in ["-v", "--voice"] and i + 1 < len(args):
+                    try:
+                        voice = validate_voice(None, None, args[i + 1])
+                    except click.BadParameter as e:
+                        click.echo(f"Error: {str(e)}", err=True)
+                        ctx.exit(1)
+                    i += 2
+                else:
+                    click.echo(f"Unexpected argument: {args[i]}", err=True)
                     ctx.exit(1)
-                i += 2
-            elif args[i] in ["-v", "--voice"] and i + 1 < len(args):
-                try:
-                    voice = validate_voice(None, None, args[i + 1])
-                except click.BadParameter as e:
-                    click.echo(f"Error: {str(e)}", err=True)
-                    ctx.exit(1)
-                i += 2
-            else:
-                text.append(args[i])
-                i += 1
 
-        text = " ".join(text)
+            try:
+                input_file = validate_input_file(input_file)
+                output = validate_output_file(output or "speech.mp3")
+                convert_text_to_speech(input_file, output, model, voice)
+                click.echo(f"Successfully converted {input_file} to {output}")
+            except Exception as e:
+                logging.error(f"Error during conversion: {str(e)}")
+                click.echo(f"Error: {str(e)}", err=True)
+        else:
+            # Direct text-to-speech conversion
+            output = None
+            default_model, default_voice = get_config()
+            model = default_model
+            voice = default_voice
+            text = []
 
-        try:
-            if output:
-                output = validate_output_file(output)
-                convert_text_to_speech_direct(text, Path(output), model, voice)
-                click.echo(f"Successfully converted text to {output}")
-            else:
-                click.echo("Converting text to speech...")
-                audio_data = convert_text_to_speech_stream(text, model, voice)
-                with tempfile.NamedTemporaryFile(
-                    suffix=".mp3", delete=False
-                ) as temp_file:
-                    temp_file.write(audio_data.getvalue())
-                    temp_file_path = temp_file.name
+            i = 0
+            while i < len(args):
+                if args[i] in ["-o", "--output"] and i + 1 < len(args):
+                    output = args[i + 1]
+                    i += 2
+                elif args[i] in ["-m", "--model"] and i + 1 < len(args):
+                    try:
+                        model = validate_model(None, None, args[i + 1])
+                    except click.BadParameter as e:
+                        click.echo(f"Error: {str(e)}", err=True)
+                        ctx.exit(1)
+                    i += 2
+                elif args[i] in ["-v", "--voice"] and i + 1 < len(args):
+                    try:
+                        voice = validate_voice(None, None, args[i + 1])
+                    except click.BadParameter as e:
+                        click.echo(f"Error: {str(e)}", err=True)
+                        ctx.exit(1)
+                    i += 2
+                else:
+                    text.append(args[i])
+                    i += 1
 
-                play_audio(Path(temp_file_path))
-                Path(temp_file_path).unlink()  # Delete the temporary file after playing
-        except PlaybackError as e:
-            logging.error(f"Playback error: {str(e)}")
-            click.echo(f"Error during audio playback: {str(e)}", err=True)
-            click.echo(
-                click.style(
-                    "No audio output device was found. Please check your sound settings.",
-                    fg="red",
-                    bold=True,
+            text = " ".join(text)
+
+            try:
+                if output:
+                    output = validate_output_file(output)
+                    convert_text_to_speech_direct(text, Path(output), model, voice)
+                    click.echo(f"Successfully converted text to {output}")
+                else:
+                    click.echo("Converting text to speech...")
+                    audio_data = convert_text_to_speech_stream(text, model, voice)
+                    with tempfile.NamedTemporaryFile(
+                        suffix=".mp3", delete=False
+                    ) as temp_file:
+                        temp_file.write(audio_data.getvalue())
+                        temp_file_path = temp_file.name
+
+                    play_audio(Path(temp_file_path))
+                    Path(
+                        temp_file_path
+                    ).unlink()  # Delete the temporary file after playing
+            except PlaybackError as e:
+                logging.error(f"Playback error: {str(e)}")
+                click.echo(f"Error during audio playback: {str(e)}", err=True)
+                click.echo(
+                    click.style(
+                        "No audio output device was found. Please check your sound settings.",
+                        fg="red",
+                        bold=True,
+                    )
                 )
-            )
-        except Exception as e:
-            logging.error(f"Error during conversion or playback: {str(e)}")
-            click.echo(f"Error: {str(e)}", err=True)
+            except Exception as e:
+                logging.error(f"Error during conversion or playback: {str(e)}")
+                click.echo(f"Error: {str(e)}", err=True)
 
 
 @click.group()
