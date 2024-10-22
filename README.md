@@ -19,6 +19,7 @@ gptspeak "Hello, world!"
 
 - **Dual-Use Design**: Use GPTSpeak as a CLI tool for quick operations or as a Python module for integration into larger projects.
 - **Convert Text to Speech**: Transform text files or direct text input into high-quality audio files using OpenAI's TTS API.
+- **Handle Long Texts**: Automatically split long texts into appropriate chunks and combine the resulting audio, allowing for conversion of texts of any length.
 - **Multiple Voice Options**: Choose from a variety of available voices to match the tone of your content.
 - **Model Selection**: Select different TTS models based on quality, speed, or other attributes.
 - **Audio Playback**: Play generated audio files directly from the command line or within your Python scripts.
@@ -256,6 +257,14 @@ gptspeak convert story.txt -o narration.mp3 -v echo
 ```
 
 This command will convert the content of `story.txt` into an audio file named `narration.mp3` using the "echo" voice.
+
+### Converting a Long Text File
+
+```bash
+gptspeak convert long_story.txt -o long_narration.mp3 -v nova
+```
+
+This command will convert the content of `long_story.txt` into an audio file named `long_narration.mp3` using the "nova" voice. If the text is longer than the API's character limit, GPTSpeak will automatically split it into chunks, process each chunk separately, and combine the results into a single audio file.
 
 ### Concatenating Multiple Audio Files
 
