@@ -175,7 +175,7 @@ def convert(input_file, output, model, voice):
         default_model, default_voice = get_config()
         model = model or default_model
         voice = voice or default_voice
-        convert_text_to_speech(input_file, output, model, voice, api_key)
+        convert_text_to_speech(input_file, output, model, voice)
         click.echo(f"Successfully converted {input_file} to {output}")
     except APIConfigError as e:
         click.echo(str(e), err=True)
