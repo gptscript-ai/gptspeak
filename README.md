@@ -94,7 +94,7 @@ export OPENAI_API_KEY="your-openai-api-key"
 gptspeak "Hello, world!" -o hello.mp3
 
 # Play direct text input without saving to a file (turn your audio up) 
-gptspeak "Hello, world!" -o hello.mp3
+gptspeak "Hello, world!"
 
 # Convert a text file to audio
 gptspeak convert input.txt -o output.mp3
